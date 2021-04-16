@@ -1,0 +1,56 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #1e1e1e;
+}
+
+header {
+    background: #1e2f2f;
+    height: 10vh;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+}
+
+section {
+    width: 100vw;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+label {
+    width: 100%;
+}
+textarea {
+    background: #2f2f1e;
+    position: relative;
+    border: none;
+    padding: 2px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
+    width: calc(100% - 4px);
+    color: white;
+    height: 3rem;
+}
+#text-input {
+    padding-top: 0.4rem;
+    width: 60vw;
+}
+
+label > ::-webkit-scrollbar {
+    width: 0;
+}
+
+#messages-container {
+    background: rgb(40, 40, 40);
+    box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
+    width: 60vw;
+    height: 60%;
+}
