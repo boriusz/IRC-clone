@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>IRC-clone</title>
-    <script src="bundle.js"></script>
+    <script src="bundle.js" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
         <div id="messages-container"></div>
         <div id="text-input">
             <label>
-                <textarea spellcheck="false" style="resize: none"></textarea>
+                <textarea maxlength="100" spellcheck="false" style="resize: none"></textarea>
             </label>
         </div>
     </section>
