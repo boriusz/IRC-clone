@@ -18,6 +18,7 @@ interface MessageInterface {
   userName: string;
   content: string;
   color: string;
+  time: Date;
 }
 
 class addMessageDto {
@@ -32,7 +33,7 @@ textarea.addEventListener("keypress", async (e) => {
     const data: addMessageDto = {
       content: textarea.value,
       userName,
-      color: "blue",
+      color: sessionStorage.getItem("color") ?? "blue",
     };
     if (data.content.length === 0) return;
     textarea.value = "";
@@ -57,9 +58,11 @@ const fetchData = async () => {
       )}`
     )
   ).json();
+  console.log(data.messages.length);
   data.messages.forEach((message) => {
     const post = new Message(message);
     messageContainer.appendChild(post.domElement());
+    messageContainer.scrollTop = messageContainer.scrollHeight;
   });
   sessionStorage.setItem("lastId", data.lastId);
   await fetchData();
@@ -71,10 +74,12 @@ class Message {
   private readonly content: string;
   private readonly userName: string;
   private readonly color: string;
+  private readonly time: Date;
   constructor(message: MessageInterface) {
     this.userName = message.userName;
     this.content = message.content;
     this.color = message.color;
+    this.time = message.time;
   }
 
   domElement() {
@@ -82,12 +87,20 @@ class Message {
     const name = document.createElement("span");
     const text = document.createElement("span");
 
+    console.log(typeof this.time);
     container.className = "message-container";
     name.className = "message-poster";
     text.className = "message-content";
 
-    name.innerText = this.userName;
-    name.style.color = this.color;
+    const messageTime = document.createElement("span");
+    messageTime.innerText = `[${new Date(this.time).toLocaleTimeString()}] `;
+    messageTime.style.color = "gray";
+    const nickName = document.createElement("span");
+    nickName.innerText = `<@${this.userName}> `;
+    nickName.style.color = this.color;
+
+    name.appendChild(messageTime);
+    name.appendChild(nickName);
 
     text.innerText = this.content;
 

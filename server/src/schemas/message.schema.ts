@@ -13,6 +13,9 @@ export class Message {
 
   @Prop()
   color: string;
+
+  @Prop()
+  time: string;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

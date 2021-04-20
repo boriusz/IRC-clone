@@ -54,4 +54,5 @@ label > ::-webkit-scrollbar {
     width: 60vw;
     height: 60%;
     overflow-y: scroll;
+    color: white;
 }

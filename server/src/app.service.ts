@@ -30,9 +30,6 @@ export class AppService {
       indexOfLastSeenMessage + 1,
       messages.length,
     );
-    if (messagesToSend.length === 0) {
-      return this.waitForDataChange(lastMessageId);
-    }
     return {
       messages: messagesToSend,
       lastId: messages[messages.length - 1]._id,
@@ -40,14 +37,19 @@ export class AppService {
   }
 
   async addMessage(messageDto: MessageDto): Promise<Message> {
+    messageDto.time = new Date(Date.now()).toString();
     const addedMessage = new this.messageModel(messageDto);
-    return addedMessage.save();
+    return await addedMessage.save();
   }
 
   async waitForDataChange(
     lastMessageId: string,
   ): Promise<{ messages: Message[]; lastId: string }> {
     return await new Promise((resolve) => {
+      setTimeout(
+        () => resolve({ messages: [], lastId: lastMessageId }),
+        1000 * 30,
+      );
       let interval = setInterval(async () => {
         const messages = await this.messageModel.find().exec();
         if (messages[messages.length - 1]._id != lastMessageId) {
@@ -64,7 +66,7 @@ export class AppService {
             lastId: messages[messages.length - 1]._id,
           });
         }
-      }, 10);
+      }, 100);
     });
   }
 }
