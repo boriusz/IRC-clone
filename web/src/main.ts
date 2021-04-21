@@ -27,13 +27,51 @@ class addMessageDto {
   content: string;
 }
 
+const COLORS = ["white", "blue", "red", "salmon", "green", "yellow"];
+
+const changeColor = () => {
+  const currColor = sessionStorage.getItem("color");
+  if (currColor) {
+    let newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    while (newColor === currColor) {
+      newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    }
+    sessionStorage.setItem("color", newColor);
+  } else {
+    const newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    sessionStorage.setItem("color", newColor);
+  }
+};
+
+const commands: Record<string, () => void> = {
+  "/color": changeColor,
+};
+
+const checkIfIsCommand = (message: string) => {
+  const command = Object.keys(commands).find((key) => key === message);
+  if (command) {
+    commands[message]();
+    return true;
+  }
+};
+
 textarea.addEventListener("keypress", async (e) => {
   if (e.code === "Enter") {
     e.preventDefault();
+    if (checkIfIsCommand(textarea.value)) {
+      textarea.value = "";
+      return;
+    }
+    if (!sessionStorage.getItem("color")) {
+      sessionStorage.setItem(
+        "color",
+        COLORS[Math.floor(Math.random() * COLORS.length)]
+      );
+    }
     const data: addMessageDto = {
-      content: textarea.value,
-      userName,
-      color: sessionStorage.getItem("color") ?? "blue",
+      content: encodeURIComponent(textarea.value),
+      userName: encodeURIComponent(userName),
+      color: sessionStorage.getItem("color"),
     };
     if (data.content.length === 0) return;
     textarea.value = "";
@@ -58,7 +96,6 @@ const fetchData = async () => {
       )}`
     )
   ).json();
-  console.log(data.messages.length);
   data.messages.forEach((message) => {
     const post = new Message(message);
     messageContainer.appendChild(post.domElement());
@@ -76,8 +113,8 @@ class Message {
   private readonly color: string;
   private readonly time: Date;
   constructor(message: MessageInterface) {
-    this.userName = message.userName;
-    this.content = message.content;
+    this.userName = decodeURIComponent(message.userName);
+    this.content = decodeURIComponent(message.content);
     this.color = message.color;
     this.time = message.time;
   }
@@ -87,7 +124,6 @@ class Message {
     const name = document.createElement("span");
     const text = document.createElement("span");
 
-    console.log(typeof this.time);
     container.className = "message-container";
     name.className = "message-poster";
     text.className = "message-content";

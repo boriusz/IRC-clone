@@ -20,20 +20,11 @@ export class AppService {
         lastId: messages[messages.length - 1]._id,
       };
     }
-    const indexOfLastSeenMessage = messages.findIndex(
-      (item) => item._id == lastMessageId,
-    );
-    if (messages[messages.length - 1]._id == lastMessageId) {
-      return await this.waitForDataChange(lastMessageId);
+    const data = await this.findNewestMessages(lastMessageId);
+    if (data) {
+      return data;
     }
-    const messagesToSend = messages.slice(
-      indexOfLastSeenMessage + 1,
-      messages.length,
-    );
-    return {
-      messages: messagesToSend,
-      lastId: messages[messages.length - 1]._id,
-    };
+    return await this.waitForDataChange(lastMessageId);
   }
 
   async addMessage(messageDto: MessageDto): Promise<Message> {
@@ -51,22 +42,36 @@ export class AppService {
         1000 * 30,
       );
       let interval = setInterval(async () => {
-        const messages = await this.messageModel.find().exec();
-        if (messages[messages.length - 1]._id != lastMessageId) {
-          const indexOfLastSeenMessage = messages.findIndex(
-            (item) => item._id == lastMessageId,
-          );
-          const messagesToSend = messages.slice(
-            indexOfLastSeenMessage + 1,
-            messages.length,
-          );
+        const data = await this.findNewestMessages(lastMessageId);
+        if (data) {
           clearInterval(interval);
-          resolve({
-            messages: messagesToSend,
-            lastId: messages[messages.length - 1]._id,
-          });
+          resolve(data);
         }
       }, 100);
     });
+  }
+
+  async findNewestMessages(
+    lastMessageId: string,
+  ): Promise<{ messages: Message[]; lastId: string } | null> {
+    const messages = await this.messageModel.find().exec();
+    if (messages[messages.length - 1]._id != lastMessageId) {
+      const indexOfLastSeenMessage = messages.findIndex(
+        (item) => item._id == lastMessageId,
+      );
+      const messagesToSend = messages.slice(
+        indexOfLastSeenMessage + 1,
+        messages.length,
+      );
+      return {
+        messages: messagesToSend,
+        lastId: messages[messages.length - 1]._id,
+      };
+    }
+    return null;
+  }
+
+  async clearOldMessages() {
+    // this.messageModel.deleteMany({ time: new Date(time) < });
   }
 }
