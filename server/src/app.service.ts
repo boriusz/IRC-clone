@@ -4,6 +4,7 @@ import { Message, MessageDocument } from './schemas/message.schema';
 import { Model } from 'mongoose';
 import { MessageDto } from './dto/message.dto';
 
+let counter = 0;
 @Injectable()
 export class AppService {
   constructor(
@@ -17,7 +18,7 @@ export class AppService {
     if (lastMessageId == 'null') {
       return {
         messages: [],
-        lastId: messages[messages.length - 1]._id,
+        lastId: messages[messages.length - 1]._id ?? null,
       };
     }
     const data = await this.findNewestMessages(lastMessageId);
@@ -28,7 +29,7 @@ export class AppService {
   }
 
   async addMessage(messageDto: MessageDto): Promise<Message> {
-    messageDto.time = new Date(Date.now()).toString();
+    messageDto.time = new Date(Date.now());
     const addedMessage = new this.messageModel(messageDto);
     return await addedMessage.save();
   }
@@ -37,10 +38,10 @@ export class AppService {
     lastMessageId: string,
   ): Promise<{ messages: Message[]; lastId: string }> {
     return await new Promise((resolve) => {
-      setTimeout(
-        () => resolve({ messages: [], lastId: lastMessageId }),
-        1000 * 30,
-      );
+      setTimeout(() => {
+        console.log(counter++);
+        resolve({ messages: [], lastId: lastMessageId });
+      }, 1000 * 10);
       let interval = setInterval(async () => {
         const data = await this.findNewestMessages(lastMessageId);
         if (data) {
@@ -55,6 +56,7 @@ export class AppService {
     lastMessageId: string,
   ): Promise<{ messages: Message[]; lastId: string } | null> {
     const messages = await this.messageModel.find().exec();
+    if (messages.length === 0) return null;
     if (messages[messages.length - 1]._id != lastMessageId) {
       const indexOfLastSeenMessage = messages.findIndex(
         (item) => item._id == lastMessageId,
@@ -69,9 +71,5 @@ export class AppService {
       };
     }
     return null;
-  }
-
-  async clearOldMessages() {
-    // this.messageModel.deleteMany({ time: new Date(time) < });
   }
 }

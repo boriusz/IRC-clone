@@ -16,6 +16,7 @@ export class AppController {
 
   @Post('/message')
   async postMessage(@Body() messageDto: MessageDto): Promise<Message> {
-    return await this.appService.addMessage(messageDto);
+    const respo = await this.appService.addMessage(messageDto);
+    return respo;
   }
 }

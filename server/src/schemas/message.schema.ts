@@ -5,6 +5,9 @@ export type MessageDocument = Message & Document;
 
 @Schema()
 export class Message {
+  @Prop({ type: Date, expires: 30, default: Date.now })
+  createdAt: Date;
+
   @Prop()
   userName: string;
 
@@ -15,7 +18,7 @@ export class Message {
   color: string;
 
   @Prop()
-  time: string;
+  time: Date;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

@@ -1,147 +1,127 @@
-const textarea = document.querySelector<HTMLTextAreaElement>("textarea");
-const messageContainer = document.querySelector("#message-container");
-let userName: string;
-
-if (sessionStorage.getItem("userName")) {
-  userName = sessionStorage.userName;
-} else {
-  userName = prompt("Podaj nick");
-  sessionStorage.setItem("userName", userName);
-}
+import { ServerMessage } from "./messages/ServerMessage";
+import { MessageInterface, UserMessage } from "./messages/UserMessage";
 
 class GetMessageDto {
   messages: MessageInterface[];
   lastId: string;
 }
 
-interface MessageInterface {
-  userName: string;
-  content: string;
-  color: string;
-  time: Date;
-}
-
-class addMessageDto {
+class AddMessageDto {
   userName: string;
   color: string;
   content: string;
 }
 
-const COLORS = ["white", "blue", "red", "salmon", "green", "yellow"];
+class Main {
+  private textarea: HTMLTextAreaElement;
+  private messageContainer: HTMLElement;
+  private readonly COLORS: string[];
+  // private readonly commands: Record<string, (T?: string) => void>;
+  private readonly commands: any;
 
-const changeColor = () => {
-  const currColor = sessionStorage.getItem("color");
-  if (currColor) {
-    let newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-    while (newColor === currColor) {
-      newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+  constructor() {
+    this.textarea = document.querySelector("textarea");
+    this.messageContainer = document.querySelector("#message-container");
+    this.COLORS = ["white", "blue", "red", "salmon", "green", "yellow"];
+    this.commands = {
+      "/color": this.changeColor,
+      "/nick": this.changeNickname,
+    };
+    this.init();
+  }
+
+  init() {
+    !sessionStorage.getItem("userName")
+      ? sessionStorage.setItem("userName", prompt("Set your username"))
+      : null;
+
+    this.textarea.addEventListener("keypress", (e) => {
+      if (e.code === "Enter") {
+        this.handleMessageSend(e);
+      }
+    });
+
+    this.fetchData();
+  }
+
+  changeColor() {
+    const currColor = sessionStorage.getItem("color");
+    let newColor = this.COLORS[Math.floor(Math.random() * this.COLORS.length)];
+    if (currColor) {
+      while (newColor === currColor) {
+        newColor = this.COLORS[Math.floor(Math.random() * this.COLORS.length)];
+      }
+      sessionStorage.setItem("color", newColor);
+    } else {
+      sessionStorage.setItem("color", newColor);
     }
-    sessionStorage.setItem("color", newColor);
-  } else {
-    const newColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-    sessionStorage.setItem("color", newColor);
   }
-};
 
-const commands: Record<string, () => void> = {
-  "/color": changeColor,
-};
-
-const checkIfIsCommand = (message: string) => {
-  const command = Object.keys(commands).find((key) => key === message);
-  if (command) {
-    commands[message]();
-    return true;
+  changeNickname(userName: string) {
+    const prevUserName = sessionStorage.getItem("userName");
+    sessionStorage.setItem("userName", userName);
+    const message = new ServerMessage(
+      `Changed your username from ${prevUserName}, to ${userName}`
+    );
+    console.log(this.COLORS, this.commands, this.messageContainer);
+    this.messageContainer.appendChild(message.domElement());
+    this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
   }
-};
 
-textarea.addEventListener("keypress", async (e) => {
-  if (e.code === "Enter") {
+  checkIfIsCommand(message: string) {
+    const [firstWord, ...rest] = message.split(" ");
+    if (firstWord === "/nick") {
+      this.changeNickname(rest.join(""));
+      return true;
+    }
+    if (firstWord === "/color") {
+      this.changeColor();
+      return true;
+    }
+  }
+
+  async fetchData(): Promise<void> {
+    const data: GetMessageDto = await (
+      await fetch(
+        `http://localhost:8080/message?lastMessageId=${sessionStorage.getItem(
+          "lastId"
+        )}`
+      )
+    ).json();
+    data.messages.forEach((message) => {
+      const userMessage = new UserMessage(message);
+      this.messageContainer.appendChild(userMessage.domElement());
+      this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+    });
+    sessionStorage.setItem("lastId", data.lastId);
+    await this.fetchData();
+  }
+
+  handleMessageSend(e: Event) {
     e.preventDefault();
-    if (checkIfIsCommand(textarea.value)) {
-      textarea.value = "";
+    if (this.checkIfIsCommand(this.textarea.value)) {
+      this.textarea.value = "";
       return;
     }
     if (!sessionStorage.getItem("color")) {
       sessionStorage.setItem(
         "color",
-        COLORS[Math.floor(Math.random() * COLORS.length)]
+        this.COLORS[Math.floor(Math.random() * this.COLORS.length)]
       );
     }
-    const data: addMessageDto = {
-      content: encodeURIComponent(textarea.value),
-      userName: encodeURIComponent(userName),
+    const data: AddMessageDto = {
+      content: encodeURIComponent(this.textarea.value),
+      userName: encodeURIComponent(sessionStorage.getItem("userName")),
       color: sessionStorage.getItem("color"),
     };
     if (data.content.length === 0) return;
-    textarea.value = "";
-    const response = await (
-      await fetch("http://localhost:8080/message", {
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-        body: JSON.stringify(data),
-      })
-    ).json();
-    if (response.errors) {
-      console.log(response.errors);
-    }
-  }
-});
-
-const fetchData = async () => {
-  const data: GetMessageDto = await (
-    await fetch(
-      `http://localhost:8080/message?lastMessageId=${sessionStorage.getItem(
-        "lastId"
-      )}`
-    )
-  ).json();
-  data.messages.forEach((message) => {
-    const post = new Message(message);
-    messageContainer.appendChild(post.domElement());
-    messageContainer.scrollTop = messageContainer.scrollHeight;
-  });
-  sessionStorage.setItem("lastId", data.lastId);
-  await fetchData();
-};
-
-fetchData();
-
-class Message {
-  private readonly content: string;
-  private readonly userName: string;
-  private readonly color: string;
-  private readonly time: Date;
-  constructor(message: MessageInterface) {
-    this.userName = decodeURIComponent(message.userName);
-    this.content = decodeURIComponent(message.content);
-    this.color = message.color;
-    this.time = message.time;
-  }
-
-  domElement() {
-    const container = document.createElement("div");
-    const name = document.createElement("span");
-    const text = document.createElement("span");
-
-    container.className = "message-container";
-    name.className = "message-poster";
-    text.className = "message-content";
-
-    const messageTime = document.createElement("span");
-    messageTime.innerText = `[${new Date(this.time).toLocaleTimeString()}] `;
-    messageTime.style.color = "gray";
-    const nickName = document.createElement("span");
-    nickName.innerText = `<@${this.userName}> `;
-    nickName.style.color = this.color;
-
-    name.appendChild(messageTime);
-    name.appendChild(nickName);
-
-    text.innerText = this.content;
-
-    container.appendChild(name);
-    container.appendChild(text);
-    return container;
+    this.textarea.value = "";
+    fetch("http://localhost:8080/message", {
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 }
+
+new Main();
