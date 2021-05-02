@@ -1,8 +1,10 @@
+import Emotes from "../Emotes";
+
 export interface MessageInterface {
   userName: string;
   content: string;
   color: string;
-  time: Date;
+  createdAt: Date;
 }
 
 export class UserMessage {
@@ -10,12 +12,14 @@ export class UserMessage {
   private readonly userName: string;
   private readonly color: string;
   private readonly time: Date;
+  private emoteManager: Emotes;
 
-  constructor(message: MessageInterface) {
+  constructor(message: MessageInterface, emoteManager: Emotes) {
     this.userName = decodeURIComponent(message.userName);
     this.content = decodeURIComponent(message.content);
     this.color = message.color;
-    this.time = message.time;
+    this.time = message.createdAt;
+    this.emoteManager = emoteManager;
   }
 
   domElement() {
@@ -23,7 +27,7 @@ export class UserMessage {
     const name = document.createElement("span");
     const text = document.createElement("span");
 
-    container.className = "message-container";
+    container.className = "message-wrapper";
     name.className = "message-poster";
     text.className = "message-content";
 
@@ -37,7 +41,7 @@ export class UserMessage {
     name.appendChild(messageTime);
     name.appendChild(nickName);
 
-    text.innerText = this.content;
+    text.appendChild(this.emoteManager.emoticonize(this.content));
 
     container.appendChild(name);
     container.appendChild(text);

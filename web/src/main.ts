@@ -1,5 +1,6 @@
 import { ServerMessage } from "./messages/ServerMessage";
 import { MessageInterface, UserMessage } from "./messages/UserMessage";
+import Emotes from "./Emotes";
 
 class GetMessageDto {
   messages: MessageInterface[];
@@ -14,10 +15,10 @@ class AddMessageDto {
 
 class Main {
   private textarea: HTMLTextAreaElement;
-  private messageContainer: HTMLElement;
+  private readonly messageContainer: HTMLElement;
   private readonly COLORS: string[];
-  // private readonly commands: Record<string, (T?: string) => void>;
-  private readonly commands: any;
+  private readonly commands: Record<string, (T?: string) => void>;
+  private emoteManager: Emotes;
 
   constructor() {
     this.textarea = document.querySelector("textarea");
@@ -27,6 +28,7 @@ class Main {
       "/color": this.changeColor,
       "/nick": this.changeNickname,
     };
+    this.emoteManager = new Emotes();
     this.init();
   }
 
@@ -36,9 +38,7 @@ class Main {
       : null;
 
     this.textarea.addEventListener("keypress", (e) => {
-      if (e.code === "Enter") {
-        this.handleMessageSend(e);
-      }
+      if (e.code === "Enter") this.handleMessageSend(e);
     });
 
     this.fetchData();
@@ -48,9 +48,9 @@ class Main {
     const currColor = sessionStorage.getItem("color");
     let newColor = this.COLORS[Math.floor(Math.random() * this.COLORS.length)];
     if (currColor) {
-      while (newColor === currColor) {
+      while (newColor === currColor)
         newColor = this.COLORS[Math.floor(Math.random() * this.COLORS.length)];
-      }
+
       sessionStorage.setItem("color", newColor);
     } else {
       sessionStorage.setItem("color", newColor);
@@ -78,6 +78,7 @@ class Main {
       this.changeColor();
       return true;
     }
+    return false;
   }
 
   async fetchData(): Promise<void> {
@@ -89,7 +90,7 @@ class Main {
       )
     ).json();
     data.messages.forEach((message) => {
-      const userMessage = new UserMessage(message);
+      const userMessage = new UserMessage(message, this.emoteManager);
       this.messageContainer.appendChild(userMessage.domElement());
       this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
     });
@@ -97,8 +98,14 @@ class Main {
     await this.fetchData();
   }
 
+  // eslint-disable-next-line complexity
   handleMessageSend(e: Event) {
     e.preventDefault();
+    const value = this.textarea.value;
+    if (!value || value.trim().length === 0) {
+      this.textarea.value = "";
+      return;
+    }
     if (this.checkIfIsCommand(this.textarea.value)) {
       this.textarea.value = "";
       return;
@@ -110,11 +117,10 @@ class Main {
       );
     }
     const data: AddMessageDto = {
-      content: encodeURIComponent(this.textarea.value),
+      content: encodeURIComponent(value.trim()),
       userName: encodeURIComponent(sessionStorage.getItem("userName")),
       color: sessionStorage.getItem("color"),
     };
-    if (data.content.length === 0) return;
     this.textarea.value = "";
     fetch("http://localhost:8080/message", {
       headers: { "Content-Type": "application/json" },
