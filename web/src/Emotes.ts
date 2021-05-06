@@ -60,8 +60,9 @@ export default class Emotes {
       if (word in this.emoteList) {
         const imageElement = document.createElement("img");
         imageElement.src = this.emoteList[word];
-        imageElement.alt = word;
+        imageElement.alt = ` ${word}`;
         imageElement.className = "emote";
+        container.setAttribute("title", word);
         container.appendChild(imageElement);
       } else {
         const spanElement = document.createTextNode(word);
@@ -71,23 +72,25 @@ export default class Emotes {
     return container;
   }
 
-  createModal() {
+  createModal(): void {
     if (document.querySelector(".emote-list")) {
       this.hideModal();
       return;
     }
     const container = document.createElement("div");
     container.className = "emote-list";
-    // container.style.left =
-    //   this.textInput.offsetLeft + this.textInput.offsetWidth + "px";
     Object.keys(this.emoteList).forEach((emoteName) => {
       const wrapper = document.createElement("div");
       const image = document.createElement("img");
       image.src = this.emoteList[emoteName];
       image.setAttribute("emoteName", emoteName);
+      wrapper.setAttribute("title", emoteName);
       wrapper.appendChild(image);
-      wrapper.addEventListener("click", (e) => {
-        this.textArea.value += ` ${emoteName} `;
+      wrapper.addEventListener("click", () => {
+        const elapsedLength = this.textArea.value.length + emoteName.length;
+        const wordCount = this.textArea.value.split(/\s+/).length;
+        if (elapsedLength < 100 || wordCount < 25)
+          this.textArea.value += ` ${emoteName} `;
       });
       container.appendChild(wrapper);
     });
@@ -95,11 +98,11 @@ export default class Emotes {
     this.emoteContainer = container;
   }
 
-  hideModal() {
+  hideModal(): void {
     this.emoteContainer.style.visibility = "hidden";
   }
 
-  showModal() {
+  showModal(): void {
     this.emoteContainer.style.visibility = "visible";
   }
 }

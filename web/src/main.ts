@@ -14,14 +14,14 @@ class AddMessageDto {
 }
 
 class Main {
-  private textarea: HTMLTextAreaElement;
+  private textArea: HTMLTextAreaElement;
   private readonly messageContainer: HTMLElement;
   private readonly COLORS: string[];
   private readonly commands: Record<string, (T?: string) => void>;
   private emoteManager: Emotes;
 
   constructor() {
-    this.textarea = document.querySelector("textarea");
+    this.textArea = document.querySelector("textarea");
     this.messageContainer = document.querySelector("#message-container");
     this.COLORS = ["white", "blue", "red", "salmon", "green", "yellow"];
     this.commands = {
@@ -37,10 +37,27 @@ class Main {
       ? sessionStorage.setItem("userName", prompt("Set your username"))
       : null;
 
-    this.textarea.addEventListener("keypress", (e) => {
+    this.textArea.addEventListener("keypress", (e) => {
       if (e.code === "Enter") this.handleMessageSend(e);
+      // } else {
+      //   const elapsedLength = this.textArea.value.length + 1;
+      //   const wordCount = this.textArea.value.split(/\s+/).length;
+      //   if (elapsedLength > 100 || wordCount > 25) e.preventDefault();
+      // }
     });
 
+    // this.textArea.addEventListener("paste", (e) => {
+    //   const prevValue = this.textArea.value;
+    //   const pasteValue = e.clipboardData.getData("text");
+    //   const selectedValue = window.getSelection().toString();
+    //   const elapsedWordCount =
+    //     prevValue.split(/\s+/).length -
+    //     selectedValue.split(/\s+/).length +
+    //     pasteValue.split(/\s+/).length;
+    //   const elapsedLength =
+    //     prevValue.length - selectedValue.length + pasteValue.length;
+    //   if (elapsedLength < 100 || elapsedWordCount < 25) e.preventDefault();
+    // });
     this.fetchData();
   }
 
@@ -101,13 +118,13 @@ class Main {
   // eslint-disable-next-line complexity
   handleMessageSend(e: Event) {
     e.preventDefault();
-    const value = this.textarea.value;
+    const value = this.textArea.value;
     if (!value || value.trim().length === 0) {
-      this.textarea.value = "";
+      this.textArea.value = "";
       return;
     }
-    if (this.checkIfIsCommand(this.textarea.value)) {
-      this.textarea.value = "";
+    if (this.checkIfIsCommand(this.textArea.value)) {
+      this.textArea.value = "";
       return;
     }
     if (!sessionStorage.getItem("color")) {
@@ -121,7 +138,7 @@ class Main {
       userName: encodeURIComponent(sessionStorage.getItem("userName")),
       color: sessionStorage.getItem("color"),
     };
-    this.textarea.value = "";
+    this.textArea.value = "";
     fetch("http://localhost:8080/message", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
