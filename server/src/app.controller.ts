@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { AppService } from './app.service';
-import { MessageDto } from './dto/message.dto';
-import { Message } from './schemas/message.schema';
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { AppService } from "./app.service";
+import { MessageDto } from "./dto/message.dto";
+import { Message } from "./schemas/message.schema";
 
 @Controller()
 export class AppController {
@@ -16,7 +16,6 @@ export class AppController {
 
   @Post('/message')
   async postMessage(@Body() messageDto: MessageDto): Promise<Message> {
-    const respo = await this.appService.addMessage(messageDto);
-    return respo;
+    return await this.appService.addMessage(messageDto);
   }
 }

@@ -5,12 +5,18 @@
     <title>IRC-clone</title>
     <script src="bundle.js" defer></script>
     <link rel="stylesheet" href="style.css" />
+
   </head>
   <body>
     <div id="main">
       <header>IRC</header>
       <section>
-        <div id="message-container"></div>
+        <div id="chatlist">
+          <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+          <div class="viewport">
+            <div class="overview"></div>
+          </div>
+        </div>
         <div id="text-input">
           <label>
             <textarea

@@ -44,18 +44,18 @@ textarea {
     width: 60vw;
 }
 
-label > ::-webkit-scrollbar {
-    width: 0;
-}
+/*label > ::-webkit-scrollbar {*/
+/*    width: 0;*/
+/*}*/
 
-#message-container {
-    background: rgb(40, 40, 40);
-    box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;
-    width: 60vw;
-    height: 60%;
-    overflow-y: scroll;
-    color: white;
-}
+/*#message-container {*/
+/*    background: rgb(40, 40, 40);*/
+/*    box-shadow: rgba(0, 0, 0, 0.35) 0 5px 15px;*/
+/*    width: 60vw;*/
+/*    height: 60%;*/
+/*    overflow-y: scroll;*/
+/*    color: white;*/
+/*}*/
 
 /*.message-wrapper {*/
 /*    display: flex;*/
@@ -98,3 +98,18 @@ label > ::-webkit-scrollbar {
     bottom: 22vh;
     z-index: 10;
 }
+
+/*crappy lib down there*/
+#chatlist { height: 60% }
+
+#chatlist { width: 60vw; clear: both; margin: 20px 0 10px; }
+#chatlist .viewport { width: 500px; height: 200px; overflow: hidden; position: relative; }
+#chatlist .overview { list-style: none; position: absolute; left: 0; top: 0; }
+#chatlist .thumb .end,
+#chatlist .thumb { background-color: #003D5D; }
+#chatlist .scrollbar { position: relative; float: right; width: 15px; }
+#chatlist .track { background-color: #D8EEFD; height: 100%; width:13px; position: relative; padding: 0 1px; }
+#chatlist .thumb { height: 20px; width: 13px; cursor: pointer; overflow: hidden; position: absolute; top: 0; }
+#chatlist .thumb .end { overflow: hidden; height: 5px; width: 13px; }
+#chatlist .disable{ display: none; }
+.noSelect { user-select: none; -o-user-select: none; -moz-user-select: none; -khtml-user-select: none; -webkit-user-select: none; }

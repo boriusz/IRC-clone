@@ -1,4 +1,5 @@
 const path = require("path");
+const webpack = require('webpack')
 
 module.exports = {
   entry: "./src/main.ts",
@@ -18,6 +19,11 @@ module.exports = {
         use: "ts-loader",
         exclude: "/node_modules/",
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+        exclude: '/node_modules/'
+      }
     ],
   },
   devServer: {

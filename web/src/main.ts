@@ -2,6 +2,11 @@ import { ServerMessage } from "./messages/ServerMessage";
 import { MessageInterface, UserMessage } from "./messages/UserMessage";
 import Emotes from "./Emotes";
 
+// import './libs/stylesheets/jquery.cssemoticons.css'
+// const $ = require('raw-loader!./libs/javascripts/jquery-1.4.2.min').default
+// const jqEmotes = require('raw-loader!./libs/javascripts/jquery.cssemoticons')
+// console.log(jq, jqEmotes)
+
 class GetMessageDto {
   messages: MessageInterface[];
   lastId: string;
@@ -19,10 +24,15 @@ class Main {
   private readonly COLORS: string[];
   private readonly commands: Record<string, (T?: string) => void>;
   private emoteManager: Emotes;
+  quit: boolean;
+  private $chatlist: any;
 
   constructor() {
     this.textArea = document.querySelector("textarea");
-    this.messageContainer = document.querySelector("#message-container");
+    this.messageContainer = document.querySelector(".overview");
+    this.$chatlist = $('#chatlist');
+    this.$chatlist.tinyscrollbar()
+
     this.COLORS = ["white", "blue", "red", "salmon", "green", "yellow"];
     this.commands = {
       "/color": this.changeColor,
@@ -95,25 +105,35 @@ class Main {
       this.changeColor();
       return true;
     }
+    if (firstWord === '/quit') {
+      this.quit = true
+      alert('opuszczono, nie otrzymasz nowych wiadomości')
+      return true
+    }
     return false;
   }
 
   async fetchData(): Promise<void> {
-    const data: GetMessageDto = await (
-      await fetch(
-        `http://localhost:8080/message?lastMessageId=${sessionStorage.getItem(
-          "lastId"
-        )}`
-      )
-    ).json();
-    data.messages.forEach((message) => {
-      const userMessage = new UserMessage(message, this.emoteManager);
-      this.messageContainer.appendChild(userMessage.domElement());
-      this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
-    });
-    sessionStorage.setItem("lastId", data.lastId);
-    await this.fetchData();
-  }
+    if (!this.quit) {
+      const data: GetMessageDto = await (
+        await fetch(
+          `http://localhost:8080/message?lastMessageId=${sessionStorage.getItem(
+            "lastId"
+          )}`
+        )
+      ).json();
+      data.messages.forEach((message) => {
+        const userMessage = new UserMessage(message, this.emoteManager);
+        this.messageContainer.appendChild(userMessage.domElement());
+        (window as any).emoticons();
+        const sb = this.$chatlist.data('plugin_tinyscrollbar')
+        sb.update('bottom')
+        // this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
+      });
+      sessionStorage.setItem("lastId", data.lastId);
+      await this.fetchData();
+    }
+    }
 
   // eslint-disable-next-line complexity
   handleMessageSend(e: Event) {

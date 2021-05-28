@@ -8,6 +8,8 @@ async function bootstrap() {
     allowedHeaders: '*',
     methods: ['POST', 'GET', 'PUT'],
   });
-  await app.listen(8080);
+  await app.listen(8080, () => {
+    console.log('started')
+  });
 }
 bootstrap();

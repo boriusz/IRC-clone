@@ -44,8 +44,6 @@ export default class Emotes {
       "https://cdn.betterttv.net/emote/5e77ed63d112fc372574e07e/1x",
     Dance: "https://cdn.betterttv.net/emote/5ffccc42465444316bf5ff55/1x",
     catJAM: "https://cdn.betterttv.net/emote/5f1b0186cf6d2144653d2970/1x",
-    ":)": "https://cdn.betterttv.net/emote/5fa5fef7f447d2645c1f737e/1x",
-    ":(": "https://cdn.betterttv.net/emote/5d73a5a95de8cf715f58806a/1x",
     PointsPLS: "https://cdn.betterttv.net/emote/5fed2d8fbe65982e48cecf62/1x",
     PogU: "https://cdn.betterttv.net/emote/5e4e7a1f08b4447d56a92967/1x",
     weirdChamp: "https://cdn.betterttv.net/emote/5d20a55de1cfde376e532972/1x",
@@ -56,16 +54,18 @@ export default class Emotes {
   emoticonize(input: string): HTMLElement {
     const splatted = input.split(" ");
     const container = document.createElement("span");
+    container.className = 'message-content'
     splatted.forEach((word) => {
       if (word in this.emoteList) {
         const imageElement = document.createElement("img");
         imageElement.src = this.emoteList[word];
         imageElement.alt = ` ${word}`;
-        imageElement.className = "emote";
-        container.setAttribute("title", word);
+        imageElement.className = "emote text";
+        imageElement.setAttribute("title", word);
         container.appendChild(imageElement);
+        container.appendChild(document.createTextNode(' '))
       } else {
-        const spanElement = document.createTextNode(word);
+        const spanElement = document.createTextNode(word+' ');
         container.appendChild(spanElement);
       }
     });

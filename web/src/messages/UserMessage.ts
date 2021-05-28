@@ -25,11 +25,15 @@ export class UserMessage {
   domElement() {
     const container = document.createElement("div");
     const name = document.createElement("span");
-    const text = document.createElement("span");
+    const text = document.createElement("div");
+
+    //
+    text.style.display = 'inline'
+    //
 
     container.className = "message-wrapper";
     name.className = "message-poster";
-    text.className = "message-content";
+    text.className = "message-content-w";
 
     const messageTime = document.createElement("span");
     messageTime.innerText = `[${new Date(this.time).toLocaleTimeString()}] `;
